@@ -54,10 +54,32 @@ I used Adafruit for this project. It is a free and easy to use. It is capable of
 First, create an [Adafruit IO](https://io.adafruit.com/) account. Then, create three new feeds: rotations, distance and duration. If you're having trouble creating feeds, there's a guide [here](https://learn.adafruit.com/adafruit-io-basics-feeds).
 
 # Code
-The screenshot below shows how to structure your project. 
+The screenshot below shows how to structure your project.
+
 ![alt text](img/fileStructure.png)
 
-The **lib** folder holds all essential libraries for this project. 
+The **lib** folder holds all essential libraries for this project. The [MQTT library](https://github.com/MartinKarlsson1337/iot-bike/blob/main/lib/mqtt.py) is already included in this directory. The file **keys.py** contains the credentials used in this project (WiFi password, Adafruit key, etc). You need to fill in your own credentials here. Leave the **AIO_CLIENT_ID** field as it is.
+
+**boot.py** is a script that runs upon booting the microcontroller. It is empty and can remain empty.
+
+**main.py** will run after **boot.py**. This file contains all logic specific to this project. Let's have a look at that code!
+
+## Imports
+First of, we need to import the libraries we need:
+```
+    import machine
+    from machine import Pin
+    import time
+    import uasyncio
+    import socket
+    from mqtt import MQTTClient
+    import ubinascii
+    import math
+    import network
+    import keys
+```
+
+
 # Transmitting data
 
 # Presenting data
