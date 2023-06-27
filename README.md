@@ -21,7 +21,7 @@ To count the number of rotations your bike wheel makes, the [TLV49645 SIP-3](htt
 
 To power the microcontroller you also need some sort of battery pack. The microcontroller needs at least 1.8V to power (5.5V maximum). I used a small battery pack with 2 AAA batteries.
 
-Furthermore, you need a breadboard, some jumpers to connect sensors, and a micro-USB cable. You will need at least 3 male-to-female connectors that are at least 30 cm. They will be used to connect the sensor to the breadboard. If they are to short, it will be hard to position the sensor correctly. 
+Furthermore, you need a breadboard, some jumpers to connect sensors, and a micro-USB cable. You will need at least 3 male-to-female connectors that are at least 30 cm. They will be used to connect the sensor to the breadboard. If they are to short, it will be hard to position the sensor correctly. You will also need a simple button. 
 
 INSERT BILL OF MATERIALS AND PRICES
 # Computer Setup
@@ -78,12 +78,121 @@ First of, we need to import the libraries we need:
     import network
     import keys
 ```
+Next, we setup some pins of the Raspberry Pi Pico WH:
+```
+    led_pin = Pin(15, mode=Pin.OUT)
+    led_pin.low()
 
+    high_pin = Pin(0, mode=Pin.OUT)
+    high_pin.high()
+```
+**led_pin** is used to light up the green LED. **high_pin** is a pin that will be constantly high, and it is used with the button. The button will act as a gate, when pushed down, the signal from high_pin will be stopped.
+
+There's also a class called **Bike_Session**. It is a class that represents a bike ride. Everytime we go out for a new bike ride, we should create an instance of this class. It keeps all the information related to the bike ride, such as: duration, number of rotations, etc. Here's the code:
+
+```
+class Bike_session(): # A bike session with a duration and a number of rotations
+
+    def __init__(self):
+        self.duration = 0 
+
+        self.alive = True
+
+        self.wheel_radius = 0.35 # wheel radius in meters   
+        self.wheel_circumference = self.wheel_radius * 2 * math.pi # Wheel circumeference
+        self.distance = 0 # Total distanced traveled
+
+        self.start_time = time.time() # Start time
+        self.rotations = 0
+
+        self.sensor_pin = Pin(16, mode=Pin.IN) 
+        self.sensor_pin.irq(handler=self.full_rotation_ISR, trigger=Pin.IRQ_FALLING) # Associate sensor pin with ISR. Trigger on an falling edge.
+
+        self.switch_pin = Pin(1, mode=Pin.IN)
+        self.switch_pin.irq(handler=self.unalive, trigger=Pin.IRQ_FALLING)
+
+    def full_rotation_ISR(self, change): # ISR that increments rotations by one
+        self.rotations += 1
+        print(self.rotations) # For debugging
+
+    def unalive(self, change):
+        print("Unalive")
+        print("END SESSION!")
+        self.sensor_pin = None
+        self.duration = time.time() - self.start_time
+        self.distance = self.rotations * self.wheel_circumference
+        self.alive = False
+```
+The most interesting part of this class, is the interrupt we assign to GPIO16 and GPIO1. The `full_rotation_ISR` function will only run when the signal on GPIO16 is on a falling edge. In practice, this means that the function  will only trigger when the magnet triggers the sensor. 
+
+`unalive` is a very stupid name for a function. Whenever the signal to GPIO1 is on a falling edge, this function will trigger. That signal will go from high to low, whenever the button is pressed. The function ends the current bike ride and calculates the duration and distance traveled. It sets `self.alive` to False, to let us know that the session is ended. We also set sensor_pin to None so that the interrupt doesn't trigger anymore. 
+
+We also need a way of connecting to a Wifi! Here's the function for that:
+
+```
+def do_connect():
+    station = network.WLAN(network.STA_IF)
+
+    station.active(True)
+    station.connect(keys.SSID, keys.PASSWORD)
+
+    print("Connecting...")
+    while station.isconnected() == False:
+        pass
+
+    print("CONNECTED")
+    led_pin.high()
+    return station.ifconfig()[0]
+```
+We set the WiFi interface to station mode by calling `network.WLAN(network.STA_IF)`. This allows us to act as a client, rather than an access-point. We try to connect to our Wi-Fi, and if the connection succeeds we turn on the LED and return the configuration. 
+
+We also need a way to send our data to Adafruit. That is provided in this function:
+```
+def send_session(bike_session):
+    try:
+        do_connect()
+        client = MQTTClient(AIO_CLIENT_ID, AIO_SERVER, AIO_PORT, AIO_USER, AIO_KEY)
+        client.set_callback(sub_cb)
+        client.connect()
+
+        client.subscribe(AIO_SENSOR_FEED)
+        client.publish(topic=AIO_SENSOR_FEED, msg=str(bike_session.rotations))
+
+        client.subscribe(AIO_DISTANCE_FEED)
+        client.publish(topic=AIO_DISTANCE_FEED, msg=str(bike_session.distance))
+
+        client.subscribe(AIO_DURATION_FEED)
+        client.publish(topic=AIO_DURATION_FEED, msg=str(bike_session.duration))
+
+    except KeyboardInterrupt as e:
+        print("EPIC FAIL")
+```
+
+We call the `do_connect` function to connect to our WiFi. An instance of the `MQTTClient` class is created. This is used to talk to Adafruit. We extract the data we need from the Bike_Session parameter, and send it to appropriate feeds.
+
+Finally, we create an instance of the `Bike_Session` class. Then, we enter an infinite loop. It will poll the `Bike_Session` object to see if it is still alive. If is not alive, we send the session to Adafruit and the break out of the loop. 
+```
+session = Bike_session()
+while(True):
+    if not session.alive:
+        send_session(session)
+        session = None
+        break
+
+print("DONE")
+```
+
+## Some comments about the code
+All print statements in the code a purely for debugging and won't show up unless you run the program from your computer. 
+
+The infinite loop might not be the best way to achieve what it is doing. The constant polling is unneccesary. I would suggest to set it to a timer, or to use a software interrupt together with some kind of semaphore.
 
 # Transmitting data
-
+Transmission of data is done through WiFi using the MQTT protocol. The data is sent to Adafruit whenever the button on the breadboard is pressed. I chose to use a button for this, because it is a clear way of saying that a bike ride has ended. 
 # Presenting data
+The last step in finalizing this project is to setup a dashboard in Adafruit. To do that, you can follow [this guide](https://learn.adafruit.com/adafruit-io-basics-dashboards). We only need to create three blocks, one for each feed. Like this:
+![alt text](img/dashboard.png)
 
+Project: complete!
 # Final thoughts and design
-
-
+This is my first IoT project. I've considered this project more as a way of learning, rather than creating some ground breaking innovation (Not that I'm capable of that anyway). I encourage you to do the same. If you're interested in trying your hand at IoT, this is a suitable project. It leaves room for improvement and modifcation - perfect for learning!

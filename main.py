@@ -17,7 +17,6 @@ led_pin.low()
 high_pin = Pin(0, mode=Pin.OUT)
 high_pin.high()
 
-station = network.WLAN(network.STA_IF)
 
 class Bike_session(): # A bike session with a duration and a number of rotations
 
