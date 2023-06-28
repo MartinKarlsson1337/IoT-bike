@@ -14,6 +14,11 @@ The objective of this project is to measure how far you travel with you travel w
 The data is collected by a microcontroller attached to your bike, which sends data via Wifi to a dashboard on Adafruit 
 using the MQTT protocol. 
 
+Here's what the end result will look like: 
+
+![alt text](img/FrontPage.jpg)
+
+
 # Material
 For this specific project I used the Raspberry Pi Pico WH. It is suitable for this project since it is also equipped with a 2.4GHz wireless interface. If you would like to read more about the RPi Pico WH, you can have a look at the [datasheet](https://datasheets.raspberrypi.com/picow/pico-w-datasheet.pdf).
 
@@ -21,9 +26,21 @@ To count the number of rotations your bike wheel makes, the [TLV49645 SIP-3](htt
 
 To power the microcontroller you also need some sort of battery pack. The microcontroller needs at least 1.8V to power (5.5V maximum). I used a small battery pack with 2 AAA batteries.
 
-Furthermore, you need a breadboard, some jumpers to connect sensors, and a micro-USB cable. You will need at least 3 male-to-female connectors that are at least 30 cm. They will be used to connect the sensor to the breadboard. If they are to short, it will be hard to position the sensor correctly. You will also need a simple button. 
+Furthermore, you need a breadboard, some jumpers to connect sensors, and a micro-USB cable. You will need at least 3 male-to-female connectors that are at least 30 cm. They will be used to connect the sensor to the breadboard. If they are to short, it will be hard to position the sensor correctly. You will also need a button. The button can be replaced by just diconnecting a cable. 
 
-INSERT BILL OF MATERIALS AND PRICES
+| Material | Price(SEK) |
+| ----------- | ----------- |
+| Raspberry Pi Pico WH | 109 |
+| Breadboard | 69 |
+| Jumper Cables M-M | 29 |
+| Jumper Cables M-F (30cm)| 49|
+| micro-USB cable| 19 |
+| TLV49645 SIP-3 | 18 |
+| Magnet Neo35 Ø5mm x 5mm| 11 |
+| Battery holder 2xAAA| 19 |
+| 330&#937; resistor| 1 |
+| **TOTAL** | **324** |
+
 # Computer Setup
 In this project [Visual Studio Code](https://code.visualstudio.com/) was used. To upload code to the Pico WH, the [pymakr](https://github.com/pycom/pymakr-vsc/blob/HEAD/GET_STARTED.md) extension was used.
 
@@ -43,11 +60,23 @@ Your OS should not matter in this project, so any OS is fine.
 5. The setup is done! You're ready to code!
 
 # Putting everything together
-This diagram shows how to connect everything. The hall effect sensor might be a bit tricky to connect. Make sure that you connect it using wires, and not directly to the breadboard. This ensures that we can easily position the sensor correctly. 
+This diagram shows how to connect everything. Connections are explained in more detail below.
+
 ![alt text](img/schematic.png)
+
+The hall effect sensor might be a bit tricky to connect. Make sure that you connect it using wires, and not directly to the breadboard. This ensures that we can easily position the sensor correctly. We also need to connect a resistor going from V<sub>S</sub> to the output. This is done to limit the current going through the sensor. From the data sheet:
+
+![alt text](img/sensorConnection.png)
+
+Furthermore, we also need to recalculate R<sub>Q</sub>. The sensor is limited to an operating range of maximum 25mA. We're powering this sensor with two 1.5 AAA batteries. That's 3V in total. If R<sub>Q</sub> = 330&#937;, then I<sub>Q</sub> = 3/330, which is about 10mA. Perfect!
 
 The green LED seen in the schematic is not a requirement for the device to function properly. Its purpose is to indicate that a Wi-Fi connection has been established, and that it is sending data via that connection.
 
+We also need to attach this device to your bike. I used tape to secure the magnet to the side of the back wheel. I also taped the sensor to point at the side of the wheel, so that the magnet passes the sensor when the wheel rotates. The sensor needs to be quite close to the magnet in order to detect it. Here's how I attached my magnet and sensor:
+
+![alt text](img/sensorCut.jpg)
+
+When the magnet passes the sensor, there's about 5 between them. Another tip/trick I used was to paint the magnet on one side. This made it much easier to know which pole was which. 
 # Platform
 I used Adafruit for this project. It is a free and easy to use. It is capable of creating simple visualizations for your data. 
 
@@ -76,7 +105,7 @@ First of, we need to import the libraries we need:
     import ubinascii
     import math
     import network
-    import keys
+    from lib.keys import *
 ```
 Next, we setup some pins of the Raspberry Pi Pico WH:
 ```
@@ -123,6 +152,8 @@ class Bike_session(): # A bike session with a duration and a number of rotations
         self.distance = self.rotations * self.wheel_circumference
         self.alive = False
 ```
+First of, you need to replace the `self.wheel_radius` variable value, with your bike's wheel radius. So take out a tape measure and do it! Measure from the center of the wheel to the edge of the tire.
+
 The most interesting part of this class, is the interrupt we assign to GPIO16 and GPIO1. The `full_rotation_ISR` function will only run when the signal on GPIO16 is on a falling edge. In practice, this means that the function  will only trigger when the magnet triggers the sensor. 
 
 `unalive` is a very stupid name for a function. Whenever the signal to GPIO1 is on a falling edge, this function will trigger. That signal will go from high to low, whenever the button is pressed. The function ends the current bike ride and calculates the duration and distance traveled. It sets `self.alive` to False, to let us know that the session is ended. We also set sensor_pin to None so that the interrupt doesn't trigger anymore. 
@@ -134,7 +165,7 @@ def do_connect():
     station = network.WLAN(network.STA_IF)
 
     station.active(True)
-    station.connect(keys.SSID, keys.PASSWORD)
+    station.connect(SSID, PASSWORD)
 
     print("Connecting...")
     while station.isconnected() == False:
@@ -146,7 +177,7 @@ def do_connect():
 ```
 We set the WiFi interface to station mode by calling `network.WLAN(network.STA_IF)`. This allows us to act as a client, rather than an access-point. We try to connect to our Wi-Fi, and if the connection succeeds we turn on the LED and return the configuration. 
 
-We also need a way to send our data to Adafruit. That is provided in this function:
+We also need a way to send our data to Adafruit. That is provided with this function:
 ```
 def send_session(bike_session):
     try:
@@ -168,7 +199,7 @@ def send_session(bike_session):
         print("EPIC FAIL")
 ```
 
-We call the `do_connect` function to connect to our WiFi. An instance of the `MQTTClient` class is created. This is used to talk to Adafruit. We extract the data we need from the Bike_Session parameter, and send it to appropriate feeds.
+We call the `do_connect` function to connect to our WiFi. An instance of the `MQTTClient` class is created. This is used to talk to Adafruit. We extract the data we need from the passed `Bike_Session` object, and send it to their corresponding feeds.
 
 Finally, we create an instance of the `Bike_Session` class. Then, we enter an infinite loop. It will poll the `Bike_Session` object to see if it is still alive. If is not alive, we send the session to Adafruit and the break out of the loop. 
 ```
@@ -195,4 +226,8 @@ The last step in finalizing this project is to setup a dashboard in Adafruit. To
 
 Project: complete!
 # Final thoughts and design
+To use the device, simply attach it to your bike as described under section **Putting everything together**. Connect the device to power and start biking! When you return from your travels, press the button and wait for the LED to turn green. When the LED turns green, wait just a little bit longer and unplug the device from power. The data from your bike ride should now be available on your Adafruit account. 
+
 This is my first IoT project. I've considered this project more as a way of learning, rather than creating some ground breaking innovation (Not that I'm capable of that anyway). I encourage you to do the same. If you're interested in trying your hand at IoT, this is a suitable project. It leaves room for improvement and modifcation - perfect for learning!
+
+I think that the device could be attached to your bike in a more secure way. Consider investing in a small box to hold your device. Also, taping the components in place is not very sustainable. You will have to retape the sensor and magnet to keep them from falling of. That's loads of plastic garbage! I would suggest using cable ties to attach the sensor. The magnet can be glued to place. 
