@@ -10,7 +10,7 @@ shipping time of the required hardware. Following this tutorial, the project sho
 
 # Objective
 The objective of this project is to measure how far you travel with your bike. I chose to do this because I use my bike everyday to and from my university. 
-I'd like to more in detail on exactly how much I use my bike, how long it takes me to get to certain places and how far away they are. 
+I'd like to more in detail exactly how much I use my bike, how long it takes me to get to certain places and how far away they are. I also wanted something that was easy to keep developing, something that I could work on in my spare time. 
 
 The data is collected by a microcontroller attached to your bike, which sends data via Wifi to a dashboard on Adafruit 
 using the MQTT protocol. 
@@ -81,9 +81,11 @@ We also need to attach this device to your bike. I used tape to secure the magne
 
 When the magnet passes the sensor, there's about 5 between them. Another tip/trick I used was to paint the magnet on one side. This made it much easier to know which pole was which. 
 # Platform
-I used Adafruit for this project. It is a free and easy to use. It is capable of creating simple visualizations for your data. 
+I used Adafruit for this project. It is a free and easy to use cloud-service. It is capable of creating simple visualizations for your data. 
 
 First, create an [Adafruit IO](https://io.adafruit.com/) account. Then, create three new feeds: rotations, distance and duration. If you're having trouble creating feeds, there's a guide [here](https://learn.adafruit.com/adafruit-io-basics-feeds).
+
+If you're interested in creating larger IoT-projects Adafruit also has paid versions. It's easy to choose a subscription plan that fits your project. By paying you get more feeds and more dashboards.
 
 # Code
 The screenshot below shows how to structure your project.
@@ -223,11 +225,13 @@ The infinite loop might not be the best way to achieve what it is doing. The con
 
 # Transmitting data
 Transmission of data is done through WiFi using the MQTT protocol. The data is sent to Adafruit whenever the button on the breadboard is pressed. I chose to use a button for this, because it is a clear way of saying that a bike ride has ended. 
+
+The alternative to Wi-Fi could have been LoRaWAN. LoRaWAN needs less power to connect to the internet, and you don't need to connect to a specific Wi-Fi. Sounds great! However, I'm student on a limited budget and I didn't want to spend more money than I had to. So I chose Wi-Fi. I've realized that LoRaWAN would've been more suitable for this type of project.
 # Presenting data
 The last step in finalizing this project is to setup a dashboard in Adafruit. To do that, you can follow [this guide](https://learn.adafruit.com/adafruit-io-basics-dashboards). We only need to create three blocks, one for each feed. Like this:
 ![alt text](img/dashboard.png)
 
-Our data will be uploaded to Adafruit whenever we press the red button to end the bike ride. 
+Our data will be uploaded to Adafruit whenever the red button is preseed to end the bike ride. You can only access the most recent data, so there's no history. 
 Project: complete!
 # Final thoughts and design
 To use the device, simply attach it to your bike as described under section **Putting everything together**. Connect the device to power and start biking! When you return from your travels, press the button and wait for the LED to turn green. When the LED turns green, wait just a little bit longer and unplug the device from power. The data from your bike ride should now be available on your Adafruit account. 
@@ -235,6 +239,17 @@ To use the device, simply attach it to your bike as described under section **Pu
 This is my first IoT project. I've considered this project more as a way of learning, rather than creating some ground breaking innovation (Not that I'm capable of that anyway). I encourage you to do the same. If you're interested in trying your hand at IoT, this is a suitable project. It leaves room for improvement and modifcation - perfect for learning!
 
 I think that the device could be attached to your bike in a more secure way. Consider investing in a small box to hold your device. Also, taping the components in place is not very sustainable. You will have to retape the sensor and magnet to keep them from falling of. That's loads of plastic garbage! I would suggest using cable ties to attach the sensor. The magnet can be glued to place. 
+
+Furthermore, I've realized that I should've chosen LoRaWAN to connect to the internet. There's no justification for chosing Wi-Fi over LoRaWAN in this project, except it's more expensive. However, I really like this project and I will keep working on it, so I might implement LoRaWAN in the future.
+
 Here are some pictures of the final product:
 
+![final1](img/IMG_2020.jpg)
 
+It looks dangerous! But I promise, it's not.
+<br>
+<br>
+![final2](img/IMG_2021.jpg)
+Sleek side-view. Would look way better with a container for the device!
+
+Thanks for reading my tutorial!
