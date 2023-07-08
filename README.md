@@ -9,7 +9,8 @@ The project is relatively short and easy to complete. The time it takes to compl
 shipping time of the required hardware. Following this tutorial, the project should only take about 2-3 hours to complete. 
 
 # Objective
-The objective of this project is to measure how far you travel with your bike. 
+The objective of this project is to measure how far you travel with your bike. I chose to do this because I use my bike everyday to and from my university. 
+I'd like to more in detail on exactly how much I use my bike, how long it takes me to get to certain places and how far away they are. 
 
 The data is collected by a microcontroller attached to your bike, which sends data via Wifi to a dashboard on Adafruit 
 using the MQTT protocol. 
