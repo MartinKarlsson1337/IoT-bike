@@ -227,6 +227,7 @@ Transmission of data is done through WiFi using the MQTT protocol. The data is s
 The last step in finalizing this project is to setup a dashboard in Adafruit. To do that, you can follow [this guide](https://learn.adafruit.com/adafruit-io-basics-dashboards). We only need to create three blocks, one for each feed. Like this:
 ![alt text](img/dashboard.png)
 
+Our data will be uploaded to Adafruit whenever we press the red button to end the bike ride. 
 Project: complete!
 # Final thoughts and design
 To use the device, simply attach it to your bike as described under section **Putting everything together**. Connect the device to power and start biking! When you return from your travels, press the button and wait for the LED to turn green. When the LED turns green, wait just a little bit longer and unplug the device from power. The data from your bike ride should now be available on your Adafruit account. 
@@ -234,3 +235,6 @@ To use the device, simply attach it to your bike as described under section **Pu
 This is my first IoT project. I've considered this project more as a way of learning, rather than creating some ground breaking innovation (Not that I'm capable of that anyway). I encourage you to do the same. If you're interested in trying your hand at IoT, this is a suitable project. It leaves room for improvement and modifcation - perfect for learning!
 
 I think that the device could be attached to your bike in a more secure way. Consider investing in a small box to hold your device. Also, taping the components in place is not very sustainable. You will have to retape the sensor and magnet to keep them from falling of. That's loads of plastic garbage! I would suggest using cable ties to attach the sensor. The magnet can be glued to place. 
+Here are some pictures of the final product:
+
+
