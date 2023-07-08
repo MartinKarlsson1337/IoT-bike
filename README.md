@@ -24,22 +24,24 @@ For this specific project I used the Raspberry Pi Pico WH. It is suitable for th
 
 To count the number of rotations your bike wheel makes, the [TLV49645 SIP-3](https://www.electrokit.com/uploads/productfile/41015/2343219.pdf) Hall-effect sensor is used. To use the sensor you also need a magnet. The sensor outputs a digital signal. 
 
-To power the microcontroller you also need some sort of battery pack. The microcontroller needs at least 1.8V to power (5.5V maximum). I used a small battery pack with 2 AAA batteries.
+To power the microcontroller you also need some sort of battery pack. The microcontroller needs at least 1.8V to power (5.5V maximum). I used a small battery pack with 2 AAA batteries(=3V).
 
 Furthermore, you need a breadboard, some jumpers to connect sensors, and a micro-USB cable. You will need at least 3 male-to-female connectors that are at least 30 cm. They will be used to connect the sensor to the breadboard. If they are to short, it will be hard to position the sensor correctly. You will also need a button. The button can be replaced by just diconnecting a cable. 
 
 | Material | Price(SEK) |
 | ----------- | ----------- |
-| Raspberry Pi Pico WH | 109 |
-| Breadboard | 69 |
-| Jumper Cables M-M | 29 |
-| Jumper Cables M-F (30cm)| 49|
-| micro-USB cable| 19 |
-| TLV49645 SIP-3 | 18 |
-| Magnet Neo35 Ø5mm x 5mm| 11 |
-| Battery holder 2xAAA| 19 |
-| 330&#937; resistor| 1 |
+| [Raspberry Pi Pico WH](https://www.electrokit.com/produkt/raspberry-pi-pico-wh/) | 109|
+| [Breadboard](https://www.electrokit.com/produkt/kopplingsdack-840-anslutningar/) | 69 |
+| [Jumper Cables M-M](https://www.electrokit.com/produkt/labbsladd-20-pin-15cm-hane-hane/)| 29 |
+| [Jumper Cables M-F(30cm)](https://www.electrokit.com/produkt/labbsladd-40-pin-30cm-hona-hane/)| 49|
+| [micro-USB cable](https://www.electrokit.com/produkt/usb-kabel-a-hane-micro-b-hane-30cm/)| 19 |
+| [TLV49645 SIP-3](https://www.electrokit.com/produkt/tlv49645-sip-3-hall-effektsensor-digital/) | 18 |
+| [Magnet Neo35 Ø5mm x 5mm ](https://www.electrokit.com/produkt/magnet-neo35-o5mm-x-5mm/)| 11 |
+| [Battery holder 2xAAA](https://www.electrokit.com/produkt/batterihallare-2xaaa-sladd/)| 19 |
+| [330&#937; resistor](https://www.electrokit.com/produkt/motstand-kolfilm-0-25w-330ohm-330r/)| 1 |
 | **TOTAL** | **324** |
+
+All items in the table above has been bought from [Electrokit](https://www.electrokit.com/).
 
 # Computer Setup
 In this project [Visual Studio Code](https://code.visualstudio.com/) was used. To upload code to the Pico WH, the [pymakr](https://github.com/pycom/pymakr-vsc/blob/HEAD/GET_STARTED.md) extension was used.
